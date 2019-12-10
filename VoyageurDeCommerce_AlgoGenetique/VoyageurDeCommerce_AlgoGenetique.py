@@ -64,7 +64,7 @@ class Voyager():
 		i=0
 		while(len(self.chemin) != len(villes) - 1):
 			sumProba = 0
-			nbRand = randrange(sum(probaChemin[i])*100)
+			nbRand = randrange(int(sum(probaChemin[i])*100))
 			for j in range(1,len(villes)):
 				sumProba += probaChemin[i][j]
 				if(not(j in self.chemin) and (nbRand < sumProba*100)):
@@ -106,7 +106,7 @@ class GeneticAlgorithm():
 	def croisementGenes(self):
 		for voyager in self.meilleursIndividus:
 			self.probaChemin[0][voyager.chemin[0]] += 1
-			for i in range(len(villes) - 1):
+			for i in range(len(voyager.chemin) - 2):
 				self.probaChemin[voyager.chemin[i]][voyager.chemin[i+1]] += 1
 
 		# A cet instant, on a un tableau qui contient des entiers représentatifs du nombre de passe d'une ville à un autre
@@ -125,8 +125,8 @@ class GeneticAlgorithm():
 		averages = []
 		for x in range(len(villes)):
 			averages.append(sum(self.probaChemin[x]) / (len(villes) - 1))
-			diff = averages[x] - self.probaChemin[x][y]
 			for y in range(1, len(villes)):
+				diff = averages[x] - self.probaChemin[x][y]
 				self.probaChemin[x][y] += (diff * self.tauxMutation)
 
 
@@ -155,3 +155,5 @@ while (generation < 6):
 
 	#On dit qu'on passe à la génération suivante
 	generation += 1
+
+	print(generation)
