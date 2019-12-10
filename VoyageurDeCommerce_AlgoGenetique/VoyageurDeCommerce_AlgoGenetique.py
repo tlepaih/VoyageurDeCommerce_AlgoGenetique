@@ -21,6 +21,8 @@ class Vect():
 
 	def str(self):
 		return "x : " + str(self.x) + ", y : " + str(self.y)
+
+villes = [Vect(0,0), Vect(1,0), Vect(1,1), Vect(0,1)]
 	
 class Voyager():
 	def __init__(self, posInit):
@@ -37,7 +39,7 @@ class Voyager():
 		self.distanceParcourue += vectDeplacement.module()
 		self.position = posVille
 		
-	def calcDistanceTotale(self, probaChemin):
+	def calcDistanceTotale(self, probaChemin=[]):
 		if(self.chemin == []):
 			randList = list(range(1,len(villes)))
 			shuffle(randList)
