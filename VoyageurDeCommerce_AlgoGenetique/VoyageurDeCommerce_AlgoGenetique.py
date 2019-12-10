@@ -5,75 +5,17 @@
 # Imports
 from math import *
 from random import *
-from copy import *
 
-# Classes
-class Vect():
-	def __init__(self, x, y):
-		self.x = x
-		self.y = y​
-	def module(self):
-		return sqrt(self.x**2 + self.y**2)​
-	def __sub__(self, otherVect):
-		return Vect(self.x-otherVect.x, self.y-otherVect.y)​
-	def str(self):
-		return "x : " + str(self.x) + ", y : " + str(self.y)
-	
-class Voyager():
-	def __init__(self, posInit):
-		self.posInit = posInit
-		self.position = posInit
-		self.distanceParcourue = 0
-		self.chemin = []
-​
-	def __repr__(self): #pour le sorted de l'algorithm
-		return repr(self.distanceParcourue)
-​
-	def deplacerA(self, posVille):
-		vectDeplacement = posVille - self.position
-		self.distanceParcourue += vectDeplacement.module()
-		self.position = posVille
-​
-	def calcDistanceTotale(self, probaChemin):
-		if(self.chemin == []):
-			randList = list(range(1,len(villes)))
-			shuffle(randList)
-			for i in randList :
-				self.deplacerA(villes[i])
-				self.chemin.append(i)
-		else:
-			self.deplacement(probaChemin)
-		self.deplacerA(self.posInit)
-​
-	def deplacement(self, probaChemin):
-		self.chemin.clear()
-		i=0
-		while(len(self.chemin) != len(villes) - 1):
-			sumProba = 0
-			nbRand = randrange(sum(probaChemin[i])*100)
-			for j in range(1,len(villes)):
-				sumProba += probaChemin[i][j]
-				if(not(j in self.chemin) and (nbRand < sumProba*100)):
-					self.deplacerA(villes[j])
-					self.chemin.append(j)
-					i=j
-					for k in range(len(villes)):
-						probaChemin[k][j] = 0
-					break
-				
-	def reset(self):
-		self.position = self.posInit
-		self.distanceParcourue = 0
 class GeneticAlgorithm():
     # Constructeur
     # Paramètres :
-    # - Taux de selection   : quel poucentage de la population va être retenu comme "meilleurs candidats"
-    # - Taux de mutation    : quelle est la chance de mutation d'un gène lors de l'étage de mutation de l'algorithme
+    # - Taux de sélection : quel pourcentage de la population va être retenu comme "meilleurs candidats"
+    # - Taux de mutation  : quelle est la chance de mutation d'un gène lors de l'étape de mutation de l'algorithme
     def __init__(self, tauxSelection, tauxMutation):
         self.tauxSelection = tauxSelection
         self.tauxMutation = tauxMutation
-    
-    # Bind une liste d'individus qui va être manipulée lors de l'évolution de l'algorithme
+
+    # Bind un liste d'individus qui va être manipulée lors de l'évolution de l'algorithme
     def bindPopulation(self, population):
         self.population = population
         self.nbIndividus = len(population)
@@ -82,24 +24,24 @@ class GeneticAlgorithm():
     def selectionIndividus(self):
         nbIndividusSelect = int(self.nbIndividus * self.tauxSelection)
         self.population.sort(key=lambda voyager: voyager.distanceParcourue)
-        self.meilleurIndividus = self.population[:nbIndividusSelect]
+        self.meilleursIndividus = self.population[:nbIndividusSelect]
 
     # Algorithme de mélange des gènes
     def croisementGenes(self):
         self.probaChemin = []
-        for voyageur in self.meilleurIndividus:
-            self.probaChemin[0][voyageur.chemin[0]] += 1
+        for voyager in self.meilleursIndividus:
+            self.probaChemin[0][voyager.chemin[0]] += 1
             for i in range(len(villes) - 1):
-                self.probaChemin[voyageur.chemin[i]][voyageur.chemin[i+1]] += 1
+                self.probaChemin[voyager.chemin[i]][voyager.chemin[i+1]] += 1
 
-        # A cet instant, on a un tableau qui contient des nombres représentatif du nombre de passage d'une ville à une autre
-        # On veut dont transformer celui-ci en tableau contenant les probalités de passer d'une ville à une autre 
+        # A cet instant, on a un tableau qui contient des entiers représentatifs du nombre de passe d'une ville à un autre
+        # On veut donc transformer celui-ci en tableau contenant les probabilités de passer d'une ville à une autre
         # pour la prochaine génération (nombre compris entre 0 et 1)
         # On divise donc chaque case du tableau "probaChemin" par le nombre d'individus sélectionnés
         for x in range(len(villes)):
             for y in range(1, len(villes)):
-                self.probaChemin[x][y] = float(self.probaChemin[x][y] / len(self.meilleurIndividus))
-
+                self.probaChemin[x][y] = float(self.probaChemin[x][y] / len(self.meilleursIndividus))
+        
     # Algorithme de mutation des probabilités
     # Cette mutation des gènes permet à l'algorithme génétique de ne pas rester coincé dans une solution qui ne serait pas
     # la meilleure en réduisant le poids d'un chemin qui serait trop important et en augmentant celui d'un qui ne le serait
@@ -111,28 +53,3 @@ class GeneticAlgorithm():
             diff = averages[x] - self.probaChemin[x][y]
             for y in range(1, len(villes)):
                 self.probaChemin[x][y] += (diff * self.tauxMutation)
-
-
-######	 Main	#######
-
-population = []
-generation = 1
-for i in range(100):
-	population.append(Voyager(villes[0]))
-	population[i].calcDistanceTotale()
-
-algo = GeneticAlgorithm(0.2, 0.1)
-algo.bindPopulation(population)
-
-while (generation < 6):
-	# On fait marcher l'algo
-	algo.selectionIndividus()
-	algo.croisementGenes()
-	algo.mutationGenes()
-
-	# On recalcule les distances parcourues totales par la nouvelle génération
-	for i in range(100):
-		population[i].calcDistanceTotale(algo.probaChemin)
-
-	# On dit qu'on passe à la génération suivante
-	generation += 1
