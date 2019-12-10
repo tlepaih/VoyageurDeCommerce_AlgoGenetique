@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29519.181
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "VoyageurDeCommerce_AlgoGenetique", "VoyageurDeCommerce_AlgoGenetique\VoyageurDeCommerce_AlgoGenetique.pyproj", "{F94B872B-148B-4230-9834-5640C0CFF964}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F94B872B-148B-4230-9834-5640C0CFF964}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F94B872B-148B-4230-9834-5640C0CFF964}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {810CB62A-8C4D-42D1-AE45-BBCCE6822E71}
+	EndGlobalSection
+EndGlobal
