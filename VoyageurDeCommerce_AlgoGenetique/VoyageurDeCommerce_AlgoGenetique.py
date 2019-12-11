@@ -18,6 +18,7 @@ def create_and_fill_double_list(size_x, size_y):
 	return l
 
 # Classes
+# Rend la manipulation de vecteurs plus facile.
 class Vect():
 	def __init__(self, x, y):
 		self.x = x
@@ -34,7 +35,8 @@ class Vect():
 
 
 villes = [Vect(0.0, 0.0), Vect(1.0, 0.0), Vect(1.0, 1.0), Vect(0.0, 1.0)]
-	
+
+# Représente un voyageur
 class Voyager():
 	def __init__(self, posInit):
 		self.posInit = posInit
@@ -83,7 +85,7 @@ class Voyager():
 		self.position = self.posInit
 		self.distanceParcourue = 0
 
-
+# Permet de créer et executer un algorithme génétique sur une population donnée
 class GeneticAlgorithm():
 	# Constructeur
 	# Paramètres :
