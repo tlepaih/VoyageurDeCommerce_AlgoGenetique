@@ -68,7 +68,7 @@ class Voyager():
 		i=0
 		while(len(self.chemin) != len(villes) - 1):
 			sumProba = 0
-			nbRand = randrange(int(sum(probaChemin2[i])*100))
+			nbRand = randrange(ceil(sum(probaChemin2[i])*100))
 			for j in range(1,len(villes)):
 				sumProba += probaChemin2[i][j]
 				if(not(j in self.chemin) and (nbRand < sumProba*100)):
@@ -147,7 +147,7 @@ algo = GeneticAlgorithm(0.2, 0.1)
 algo.bindPopulation(population)
 
 
-while (generation < 6):
+while (generation < 11):
 	# On fait marcher l'algo
 	algo.selectionIndividus()
 	algo.croisementGenes()
