@@ -33,8 +33,18 @@ class Vect():
 	def str(self):
 		return "x : " + str(self.x) + ", y : " + str(self.y)
 
+# Lecture du fichier contenant les coordonnées GPS
+# Stockage des noms des villes dans la list "nom_villes"
+# Stockage des coordonnées sous la forme de vecteurs dans la list "villes"
+with open("villes.txt", "r") as f_villes:
+	contenu = f_villes.read()
 
-villes = [Vect(0.0, 0.0), Vect(1.0, 0.0), Vect(1.0, 1.0), Vect(0.0, 1.0)]
+w_contenu = contenu.split()
+nom_villes = []
+villes = []
+for i in range(round(len(w_contenu) / 3)):
+	nom_villes.append(w_contenu[3*i])
+	villes.append(Vect(float(w_contenu[3*i + 1]), float(w_contenu[3*i + 2])))
 
 # Représente un voyageur
 class Voyager():
@@ -102,6 +112,10 @@ class GeneticAlgorithm():
 		self.population = population
 		self.nbIndividus = len(population)
 
+	def getMeilleurActuel(self):
+		self.population.sort(key=lambda voyager: voyager.distanceParcourue)
+		return deepcopy(self.population[0])
+		
 	# Algorithme de sélection des meilleurs individus
 	def selectionIndividus(self):
 		nbIndividusSelect = int(self.nbIndividus * self.tauxSelection)
@@ -151,11 +165,19 @@ for i in range(100):
 	population.append(Voyager(villes[0]))
 	population[i].calcDistanceTotale()
 	
-algo = GeneticAlgorithm(0.1, 0.02)
+algo = GeneticAlgorithm(0.25, 0.12)
 algo.bindPopulation(population)
 
 # Tant que l'algo n'a pas trouvé la "solution" :
 while (not(algo.foundSolution())):
+	# On récupère le meilleur individu de la génération actuelle
+	meilleurVoyageur = algo.getMeilleurActuel()
+	meilleurChemin = []
+	meilleurChemin.append("Paris")
+	for e in meilleurVoyageur.chemin:
+		meilleurChemin.append(nom_villes[int(e)])
+	meilleurChemin.append("Paris")
+
 	# On fait marcher l'algo
 	algo.selectionIndividus()
 	algo.croisementGenes()
@@ -163,10 +185,10 @@ while (not(algo.foundSolution())):
 
 	print("Generation : ", generation)
 	print("Proba :")
-	print(algo.probaChemin[0])
-	print(algo.probaChemin[1])
-	print(algo.probaChemin[2])
-	print(algo.probaChemin[3], end="\n\n")
+	for i in range(len(villes)):
+		print(algo.probaChemin[i])
+
+	print("")
 
 	# On recalcule les distances parcourues totales par la nouvelle génération
 	for i in range(100):
@@ -175,3 +197,5 @@ while (not(algo.foundSolution())):
 	#On dit qu'on passe à la génération suivante
 	generation += 1
 
+print("Resultat obtenu au bout de ", generation-1, " generations :")
+print(meilleurChemin)

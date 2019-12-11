@@ -4,3 +4,4 @@ Nantes -1.5534 47.2173
 Marseille 5.4 43.3
 Lille 3.0667 50.6333
 Bordeaux -0.5667 44.8333
+Bourges 2.4 47.083333
