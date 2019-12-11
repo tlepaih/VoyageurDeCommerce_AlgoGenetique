@@ -68,7 +68,6 @@ class Voyager():
 		i=0
 		while(len(self.chemin) != len(villes) - 1):
 			sumProba = 0
-			print(i,probaChemin2[i])
 			nbRand = randrange(int(sum(probaChemin2[i])*100))
 			for j in range(1,len(villes)):
 				sumProba += probaChemin2[i][j]
@@ -154,6 +153,13 @@ while (generation < 6):
 	algo.croisementGenes()
 	algo.mutationGenes()
 
+	print("Generation : ", generation)
+	print("Proba :")
+	print(algo.probaChemin[0])
+	print(algo.probaChemin[1])
+	print(algo.probaChemin[2])
+	print(algo.probaChemin[3], end="\n\n")
+
 	# On recalcule les distances parcourues totales par la nouvelle génération
 	for i in range(100):
 		population[i].calcDistanceTotale(algo.probaChemin)
@@ -161,4 +167,3 @@ while (generation < 6):
 	#On dit qu'on passe à la génération suivante
 	generation += 1
 
-	print(generation)
