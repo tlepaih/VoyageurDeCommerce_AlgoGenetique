@@ -133,6 +133,12 @@ class GeneticAlgorithm():
 				diff = averages[x] - self.probaChemin[x][y]
 				self.probaChemin[x][y] += (diff * self.tauxMutation)
 
+	def foundSolution(self):
+		seuil = 1E-3
+		for x in range(len(villes)):
+			if (sum(self.probaChemin[x]) < seuil and sum(self.probaChemin[x]) != 0):
+				return True
+		return False
 
 ######   MAIN   ######
 
@@ -143,11 +149,11 @@ for i in range(100):
 	population.append(Voyager(villes[0]))
 	population[i].calcDistanceTotale()
 	
-algo = GeneticAlgorithm(0.2, 0.1)
+algo = GeneticAlgorithm(0.1, 0.02)
 algo.bindPopulation(population)
 
-
-while (generation < 11):
+# Tant que l'algo n'a pas trouvé la "solution" :
+while (not(algo.foundSolution())):
 	# On fait marcher l'algo
 	algo.selectionIndividus()
 	algo.croisementGenes()
