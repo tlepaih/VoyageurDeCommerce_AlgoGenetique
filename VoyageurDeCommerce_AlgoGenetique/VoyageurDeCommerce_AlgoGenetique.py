@@ -18,6 +18,7 @@ def create_and_fill_double_list(size_x, size_y):
 	return l
 
 # Classes
+# Rend la manipulation de vecteurs plus facile.
 class Vect():
 	def __init__(self, x, y):
 		self.x = x
@@ -34,7 +35,8 @@ class Vect():
 
 
 villes = [Vect(0.0, 0.0), Vect(1.0, 0.0), Vect(1.0, 1.0), Vect(0.0, 1.0)]
-	
+
+# Représente un voyageur
 class Voyager():
 	def __init__(self, posInit):
 		self.posInit = posInit
@@ -68,8 +70,7 @@ class Voyager():
 		i=0
 		while(len(self.chemin) != len(villes) - 1):
 			sumProba = 0
-			print(i,probaChemin2[i])
-			nbRand = randrange(int(sum(probaChemin2[i])*100))
+			nbRand = randrange(ceil(sum(probaChemin2[i])*100))
 			for j in range(1,len(villes)):
 				sumProba += probaChemin2[i][j]
 				if(not(j in self.chemin) and (nbRand < sumProba*100)):
@@ -84,7 +85,7 @@ class Voyager():
 		self.position = self.posInit
 		self.distanceParcourue = 0
 
-
+# Permet de créer et executer un algorithme génétique sur une population donnée
 class GeneticAlgorithm():
 	# Constructeur
 	# Paramètres :
@@ -134,6 +135,12 @@ class GeneticAlgorithm():
 				diff = averages[x] - self.probaChemin[x][y]
 				self.probaChemin[x][y] += (diff * self.tauxMutation)
 
+	def foundSolution(self):
+		seuil = 1E-3
+		for x in range(len(villes)):
+			if (sum(self.probaChemin[x]) < seuil and sum(self.probaChemin[x]) != 0):
+				return True
+		return False
 
 ######   MAIN   ######
 
@@ -144,15 +151,22 @@ for i in range(100):
 	population.append(Voyager(villes[0]))
 	population[i].calcDistanceTotale()
 	
-algo = GeneticAlgorithm(0.2, 0.1)
+algo = GeneticAlgorithm(0.1, 0.02)
 algo.bindPopulation(population)
 
-
-while (generation < 6):
+# Tant que l'algo n'a pas trouvé la "solution" :
+while (not(algo.foundSolution())):
 	# On fait marcher l'algo
 	algo.selectionIndividus()
 	algo.croisementGenes()
 	algo.mutationGenes()
+
+	print("Generation : ", generation)
+	print("Proba :")
+	print(algo.probaChemin[0])
+	print(algo.probaChemin[1])
+	print(algo.probaChemin[2])
+	print(algo.probaChemin[3], end="\n\n")
 
 	# On recalcule les distances parcourues totales par la nouvelle génération
 	for i in range(100):
@@ -161,4 +175,3 @@ while (generation < 6):
 	#On dit qu'on passe à la génération suivante
 	generation += 1
 
-	print(generation)
