@@ -5,3 +5,8 @@ Marseille 5.4 43.3
 Lille 3.0667 50.6333
 Bordeaux -0.5667 44.8333
 Bourges 2.4 47.083333
+Tours 0.683333 47.383333
+Limoge 1.25 45.85
+Clermond-Ferrand 3.083333 45.783333
+Orleans 1.9 47.916667
+Dijon 5.016667 47.316667

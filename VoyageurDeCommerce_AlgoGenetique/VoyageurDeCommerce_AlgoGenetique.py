@@ -80,7 +80,10 @@ class Voyager():
 		i=0
 		while(len(self.chemin) != len(villes) - 1):
 			sumProba = 0
-			nbRand = randrange(ceil(sum(probaChemin2[i])*100))
+			try:
+				nbRand = randrange(ceil(sum(probaChemin2[i])*100))
+			except:
+				nbRand = 150
 			for j in range(1,len(villes)):
 				sumProba += probaChemin2[i][j]
 				if(not(j in self.chemin) and (nbRand < sumProba*100)):
@@ -150,7 +153,7 @@ class GeneticAlgorithm():
 				self.probaChemin[x][y] += (diff * self.tauxMutation)
 
 	def foundSolution(self):
-		seuil = 1E-3
+		seuil = 1E-10
 		for x in range(len(villes)):
 			if (sum(self.probaChemin[x]) < seuil and sum(self.probaChemin[x]) != 0):
 				return True
@@ -164,14 +167,16 @@ generation = 1
 for i in range(100):
 	population.append(Voyager(villes[0]))
 	population[i].calcDistanceTotale()
-	
-algo = GeneticAlgorithm(0.25, 0.12)
+
+# Meilleurs valeurs de taux pour l'instant : (0.22, 0.21)	
+algo = GeneticAlgorithm(0.22, 0.21)
 algo.bindPopulation(population)
 
 # Tant que l'algo n'a pas trouvé la "solution" :
 while (not(algo.foundSolution())):
 	# On récupère le meilleur individu de la génération actuelle
 	meilleurVoyageur = algo.getMeilleurActuel()
+	meilleurDist = meilleurVoyageur.distanceParcourue
 	meilleurChemin = []
 	meilleurChemin.append("Paris")
 	for e in meilleurVoyageur.chemin:
@@ -183,12 +188,11 @@ while (not(algo.foundSolution())):
 	algo.croisementGenes()
 	algo.mutationGenes()
 
-	print("Generation : ", generation)
-	print("Proba :")
-	for i in range(len(villes)):
-		print(algo.probaChemin[i])
-
-	print("")
+	#print("Generation : ", generation)
+	#print("Proba :")
+	#for i in range(len(villes)):
+	#	print(algo.probaChemin[i])
+	#print("")
 
 	# On recalcule les distances parcourues totales par la nouvelle génération
 	for i in range(100):
@@ -199,3 +203,4 @@ while (not(algo.foundSolution())):
 
 print("Resultat obtenu au bout de ", generation-1, " generations :")
 print(meilleurChemin)
+print("Distance totale parcourue : ", meilleurDist)
