@@ -9,28 +9,13 @@ from random import *
 from copy import *
 import csv
 
-#Variables globales beaucoup utilisées
-nom_villes = []
-villes = []
+# Functions
 
-#Classes
 class Affichage():
 	def __init__(self):
 		t.bgpic("france.png")
 		t.speed(0)
 		t.hideturtle()
-
-		#Deuxième Tortue pour l'affichage des stats
-		self.turtleStats = t.Turtle()
-		self.turtleStats.hideturtle()
-
-		#pour l'affichage dans la France (dans self.scaleVilles)
-		self.origine = Vect(-4.4546, 42)
-		self.hImage = self.wImage = 500
-		self.hReel = 9.2
-		self.wReel = 12.8
-		self.scaleFactorX = self.wImage/self.wReel
-		self.scaleFactorY = self.hImage/self.hReel
 
 	def dessineCroix(self, point, taille, gras=False):
 		if(gras):
@@ -59,62 +44,15 @@ class Affichage():
 		t.goto(villes[0].x, villes[0].y)
 		t.penup()
 
-	def dessineVilles(self):
-		for i in range(len(villes)):
-			villes[i] = villes[i] - self.origine
-			villes[i].x *= self.scaleFactorX
-			villes[i].y *= self.scaleFactorY
-			villes[i] = villes[i] - Vect(250,250)
-			self.dessineCroix(villes[i], 10, (i==0))
 
-	def gestionEffacements(self):
-		t.speed(1)
-		if(algo.generation != 0):
-			t.tracer(100, 0)
-			for _ in range(len(villes) + 2):
-				t.undo()
-			for _ in range(3):
-				self.turtleStats.undo()
+def getElem(file, i, j):
+    with open(file, 'r') as f:
+        reader = csv.reader(f)
+        for line in reader:
+            if reader.line_num - 1 == i:
+                return line[j]
 
-	def displayStats(self):
-		self.turtleStats.penup()
-		self.turtleStats.pencolor("black")
-		self.turtleStats.goto(-aff.wImage/2, aff.hImage/2 - 15)
-		self.turtleStats.write("Generation : " + str(algo.generation), False, "left", ("Arial", 10, "normal"))
-		self.turtleStats.goto(-aff.wImage/2, aff.hImage/2 - 30)
-		self.turtleStats.write("Distance : " + "%.2f" % algo.meilleurDist, False, "left", ("Arial", 10, "normal"))
-
-class GestionFichier():
-	def __init__(self, nameFile):
-		self.file = nameFile
-
-	def getElem(self, i, j):
-		with open(self.file, 'r') as f:
-			reader = csv.reader(f)
-			for line in reader:
-				if reader.line_num - 1 == i:
-					return line[j]
-
-	def fill_villes(self):
-		if self.file == "villes.txt":
-			with open(self.file, "r") as f_villes:
-				contenu = f_villes.read()
-
-			w_contenu = contenu.split()
-	
-			for i in range(round(len(w_contenu) / 3)):
-				nom_villes.append(w_contenu[3*i])
-				villes.append(Vect(float(w_contenu[3*i + 1]), float(w_contenu[3*i + 2])))
-
-		elif self.file == "villes.csv":
-			with open(self.file, "r") as f_villes:
-				contenu = csv.reader(f_villes)
-				for row in contenu:
-					nom_villes.append(row[0])
-					villes.append(Vect(float(row[2]), float(row[1])))
-		else:
-			print("Erreur : Fichier de villes non existant.")
-
+# Classes
 # Rend la manipulation de vecteurs plus facile.
 class Vect():
 	def __init__(self, x, y):
@@ -129,6 +67,48 @@ class Vect():
 
 	def str(self):
 		return "x : " + str(self.x) + ", y : " + str(self.y)
+
+# Lecture du fichier contenant les coordonnées GPS
+# Stockage des noms des villes dans la list "nom_villes"
+# Stockage des coordonnées sous la forme de vecteurs dans la list "villes"
+
+file = "villes.csv"
+nom_villes = []
+villes = []
+
+if file == "villes.txt":
+	with open(file, "r") as f_villes:
+		contenu = f_villes.read()
+
+	w_contenu = contenu.split()
+	
+	for i in range(round(len(w_contenu) / 3)):
+		nom_villes.append(w_contenu[3*i])
+		villes.append(Vect(float(w_contenu[3*i + 1]), float(w_contenu[3*i + 2])))
+
+elif file == "villes.csv":
+	with open(file, "r") as f_villes:
+		contenu = csv.reader(f_villes)
+		for row in contenu:
+			nom_villes.append(row[0])
+			villes.append(Vect(float(row[2]), float(row[1])))
+
+else:
+	print("Erreur : Fichier de villes non existant.")
+
+origine = Vect(-4.4546, 42)
+hImage = wImage = 500
+hReel = 9.2
+wReel = 12.8
+scaleFactorX = wImage/wReel
+scaleFactorY = hImage/hReel
+
+for i in range(len(villes)):
+	villes[i] = villes[i] - origine
+	villes[i].x *= scaleFactorX
+	villes[i].y *= scaleFactorY
+	villes[i] = villes[i] - Vect(250,250)
+	dessineCroix(villes[i], 10, (i==0))
 
 # Représente un voyageur
 class Voyager():
@@ -192,20 +172,12 @@ class GeneticAlgorithm():
 	def __init__(self, tauxSelection, tauxMutation):
 		self.tauxSelection = tauxSelection
 		self.tauxMutation = tauxMutation
-		self.probaChemin = self.create_and_fill_double_list(len(villes), len(villes))
-		self.population = []
-		self.generation = 0
-		self.nbIndividus = 100
-		
-		#On crée et on lance la génération 0
-		for i in range(self.nbIndividus):
-			self.population.append(Voyager(villes[0]))
-			self.population[i].calcDistanceTotale()
+		self.probaChemin = create_and_fill_double_list(len(villes), len(villes))
 
-	## Bind un liste d'individus qui va être manipulée lors de l'évolution de l'algorithme
-	#def bindPopulation(self, population):
-	#	self.population = population
-	#	self.nbIndividus = len(population)
+	# Bind un liste d'individus qui va être manipulée lors de l'évolution de l'algorithme
+	def bindPopulation(self, population):
+		self.population = population
+		self.nbIndividus = len(population)
 
 	def getMeilleurActuel(self):
 		self.population.sort(key=lambda voyager: voyager.distanceParcourue)
@@ -258,71 +230,91 @@ class GeneticAlgorithm():
 	def foundSolution(self):
 		seuil = 1E-10
 		for x in range(len(villes)):
+			print(sum(self.probaChemin[x]))
 			if (sum(self.probaChemin[x]) < seuil and sum(self.probaChemin[x]) != 0):
 				return True
 		return False
 
-	def setMeilleur(self):
-		self.meilleurVoyageur = self.getMeilleurActuel()
-		self.meilleurDist = self.meilleurVoyageur.distanceParcourue
-		self.meilleurChemin = self.meilleurVoyageur.chemin
-		self.meilleurCheminStr = []
-		self.meilleurCheminStr.append("Paris")
-		for e in self.meilleurVoyageur.chemin:
-			self.meilleurCheminStr.append(nom_villes[int(e)])
-		self.meilleurCheminStr.append("Paris")
-
-	def create_and_fill_double_list(self, size_x, size_y):
+	def create_and_fill_double_list(size_x, size_y):
 		l = []
 		for a in range(size_x):
 			l.append([])
 			for _ in range(size_y):
 				l[a].append(0.0)
-		return l
 
+		return l
 
 ######   MAIN   ######
 
-file = GestionFichier("villes.csv")
-file.fill_villes()
+population = []
+generation = 1
 
-aff = Affichage()
-aff.dessineVilles()
+for i in range(100):
+	population.append(Voyager(villes[0]))
+	population[i].calcDistanceTotale()
 
-#On crée notre algorithme et on lance la génération 0
-algo = GeneticAlgorithm(0.2, 0.23) # Meilleurs valeurs de taux pour l'instant : (0.22, 0.23)	
+# Meilleurs valeurs de taux pour l'instant : (0.22, 0.23)	
+algo = GeneticAlgorithm(0.22, 0.21)
+algo.bindPopulation(population)
+
+turtleStats = t.Turtle()
+turtleStats.hideturtle()
 
 # Tant que l'algo n'a pas trouvé la "solution" :
 while (not(algo.foundSolution())):
 	# On récupère le meilleur individu de la génération actuelle
-	algo.setMeilleur()
+	meilleurVoyageur = algo.getMeilleurActuel()
+	meilleurDist = meilleurVoyageur.distanceParcourue
+	meilleurChemin = meilleurVoyageur.chemin
+	meilleurCheminStr = []
+	meilleurCheminStr.append("Paris")
+	for e in meilleurVoyageur.chemin:
+		meilleurCheminStr.append(nom_villes[int(e)])
+	meilleurCheminStr.append("Paris")
 	
-	#Gestion effacements (avant les 2 fonctions de dessin)
-	aff.gestionEffacements()
+	#Affichage et effacement des chemins
+	t.speed(1)
+	if(generation != 1):
+		t.tracer(100, 0)
+		for _ in range(len(villes) + 2):
+			t.undo()
+		for _ in range(3):
+			turtleStats.undo()
 
 	#Affichage stats actuelles
-	aff.displayStats()
+	turtleStats.penup()
+	turtleStats.pencolor("black")
+	turtleStats.goto(-wImage/2, hImage/2)
+	turtleStats.write("Generation : " + str(generation))
+	turtleStats.goto(-wImage/2, hImage/2 - 10)
+	turtleStats.write("Distance : " + str(meilleurDist))
 
 	#Affichage meilleur chemin de la génération
 	t.tracer(1,0)
-	aff.dessinerChemin(algo.meilleurChemin)
+	dessinerChemin(meilleurChemin)
 
 	# On fait marcher l'algo
 	algo.selectionIndividus()
 	algo.croisementGenes()
 	algo.mutationGenes()
 
+	#print("Generation : ", generation)
+	#print("Proba :")
+	#for i in range(len(villes)):
+	#	print(algo.probaChemin[i])
+	#print("")
+
 	# On recalcule les distances parcourues totales par la nouvelle génération
 	for i in range(100):
-		algo.population[i].calcDistanceTotale(algo.probaChemin)
+		population[i].calcDistanceTotale(algo.probaChemin)
 
 	#On dit qu'on passe à la génération suivante
-	algo.generation += 1
+	generation += 1
 
-print("Resultat obtenu au bout de ", algo.generation-1, " generations :")
-print(algo.meilleurCheminStr)
-print("Distance totale parcourue : ", algo.meilleurDist)
+print("Resultat obtenu au bout de ", generation-1, " generations :")
+print(meilleurCheminStr)
+print("Distance totale parcourue : ", meilleurDist)
 
-aff.dessinerChemin(algo.meilleurChemin)
+dessinerChemin(meilleurChemin)
 
 t.done()
