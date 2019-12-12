@@ -67,18 +67,21 @@ class Affichage():
 			villes[i] = villes[i] - Vect(250,250)
 			self.dessineCroix(villes[i], 10, (i==0))
 
-	def gestionEffacements(self):
+	def gestionEffacements(self, redessiner):
 		t.speed(1)
 		if(algo.generation != 0):
 			t.tracer(100, 0)
-			for _ in range(len(villes) + 2):
-				t.undo()
+			if (redessiner == True):
+				for _ in range(len(villes) + 2):
+					t.undo()
 			for _ in range(3):
 				self.turtleStats.undo()
 
 	def displayStats(self):
 		self.turtleStats.penup()
 		self.turtleStats.pencolor("black")
+		self.turtleStats.goto(-aff.wImage/2, aff.hImage/2)
+		self.turtleStats.write("Nombre de villes : " + str(len(villes)), False, "left", ("Arial", 10, "normal"))
 		self.turtleStats.goto(-aff.wImage/2, aff.hImage/2 - 15)
 		self.turtleStats.write("Generation : " + str(algo.generation), False, "left", ("Arial", 10, "normal"))
 		self.turtleStats.goto(-aff.wImage/2, aff.hImage/2 - 30)
@@ -223,7 +226,7 @@ class GeneticAlgorithm():
 		divAverage = len(self.meilleursIndividus)
 		for voyager in self.meilleursIndividus:
 			if (classement == 1):
-				poids = 5					# Valeur à tester pour changer le poids du premier
+				poids = 4					# Valeur à tester pour changer le poids du premier
 				divAverage += poids - 1
 			elif (classement == 2):
 				poids = 2					# Valeur à tester pour changer le poids du deuxième
@@ -256,7 +259,7 @@ class GeneticAlgorithm():
 				self.probaChemin[x][y] += (diff * self.tauxMutation)
 
 	def foundSolution(self):
-		seuil = 1E-10
+		seuil = 1E-7
 		for x in range(len(villes)):
 			if (sum(self.probaChemin[x]) < seuil and sum(self.probaChemin[x]) != 0):
 				return True
@@ -289,8 +292,10 @@ file.fill_villes()
 aff = Affichage()
 aff.dessineVilles()
 
+pastChemin = []
+
 #On crée notre algorithme et on lance la génération 0
-algo = GeneticAlgorithm(0.2, 0.23) # Meilleurs valeurs de taux pour l'instant : (0.22, 0.23)	
+algo = GeneticAlgorithm(0.18, 0.22) # Meilleurs valeurs de taux pour l'instant : (0.22, 0.23)	
 
 # Tant que l'algo n'a pas trouvé la "solution" :
 while (not(algo.foundSolution())):
@@ -298,14 +303,15 @@ while (not(algo.foundSolution())):
 	algo.setMeilleur()
 	
 	#Gestion effacements (avant les 2 fonctions de dessin)
-	aff.gestionEffacements()
+	aff.gestionEffacements(algo.meilleurChemin != pastChemin)
 
 	#Affichage stats actuelles
 	aff.displayStats()
 
-	#Affichage meilleur chemin de la génération
+	#Affichage meilleur chemin de la génération si il est différent de celui d'avant
 	t.tracer(1,0)
-	aff.dessinerChemin(algo.meilleurChemin)
+	if (algo.meilleurChemin != pastChemin):
+		aff.dessinerChemin(algo.meilleurChemin)
 
 	# On fait marcher l'algo
 	algo.selectionIndividus()
@@ -318,6 +324,9 @@ while (not(algo.foundSolution())):
 
 	#On dit qu'on passe à la génération suivante
 	algo.generation += 1
+
+	# On enregitre le meilleur chemin de la génération d'avant pour le comparer avec celui d'après
+	pastChemin = deepcopy(algo.meilleurChemin)
 
 print("Resultat obtenu au bout de ", algo.generation-1, " generations :")
 print(algo.meilleurCheminStr)
