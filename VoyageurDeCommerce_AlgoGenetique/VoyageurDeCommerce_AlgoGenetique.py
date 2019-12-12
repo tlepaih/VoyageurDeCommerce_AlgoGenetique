@@ -45,7 +45,7 @@ class Vect():
 # Stockage des noms des villes dans la list "nom_villes"
 # Stockage des coordonnées sous la forme de vecteurs dans la list "villes"
 
-file = "villes.csv"
+file = "villes.txt"
 nom_villes = []
 villes = []
 
@@ -153,10 +153,21 @@ class GeneticAlgorithm():
 
 	# Algorithme de mélange des gènes
 	def croisementGenes(self):
+		classement = 1
+		divAverage = len(self.meilleursIndividus)
 		for voyager in self.meilleursIndividus:
-			self.probaChemin[0][voyager.chemin[0]] += 1
+			if (classement == 1):
+				poids = 5					# Valeur à tester pour changer le poids du premier
+				divAverage += poids - 1
+			elif (classement == 2):
+				poids = 2					# Valeur à tester pour changer le poids du deuxième
+				divAverage += poids - 1
+			else:
+				poids = 1
+			self.probaChemin[0][voyager.chemin[0]] += poids
 			for i in range(len(voyager.chemin) - 1):
-				self.probaChemin[voyager.chemin[i]][voyager.chemin[i+1]] += 1
+				self.probaChemin[voyager.chemin[i]][voyager.chemin[i+1]] += poids
+			classement += 1
 
 		# A cet instant, on a un tableau qui contient des entiers représentatifs du nombre de passe d'une ville à un autre
 		# On veut donc transformer celui-ci en tableau contenant les probabilités de passer d'une ville à une autre
@@ -164,7 +175,7 @@ class GeneticAlgorithm():
 		# On divise donc chaque case du tableau "probaChemin" par le nombre d'individus sélectionnés
 		for x in range(len(villes)):
 			for y in range(1, len(villes)):
-				self.probaChemin[x][y] = float(self.probaChemin[x][y] / len(self.meilleursIndividus))
+				self.probaChemin[x][y] = float(self.probaChemin[x][y] / divAverage)
 	
 	# Algorithme de mutation des probabilités
 	# Cette mutation des gènes permet à l'algorithme génétique de ne pas rester coincé dans une solution qui ne serait pas
@@ -187,46 +198,46 @@ class GeneticAlgorithm():
 
 ######   MAIN   ######
 
-#population = []
-#generation = 1
+population = []
+generation = 1
 
-#for i in range(100):
-#	population.append(Voyager(villes[0]))
-#	population[i].calcDistanceTotale()
+for i in range(100):
+	population.append(Voyager(villes[0]))
+	population[i].calcDistanceTotale()
 
-## Meilleurs valeurs de taux pour l'instant : (0.22, 0.21)	
-#algo = GeneticAlgorithm(0.22, 0.21)
-#algo.bindPopulation(population)
+# Meilleurs valeurs de taux pour l'instant : (0.22, 0.23)	
+algo = GeneticAlgorithm(0.22, 0.23)
+algo.bindPopulation(population)
 
-## Tant que l'algo n'a pas trouvé la "solution" :
-#while (not(algo.foundSolution())):
-#	# On récupère le meilleur individu de la génération actuelle
-#	meilleurVoyageur = algo.getMeilleurActuel()
-#	meilleurDist = meilleurVoyageur.distanceParcourue
-#	meilleurChemin = []
-#	meilleurChemin.append("Paris")
-#	for e in meilleurVoyageur.chemin:
-#		meilleurChemin.append(nom_villes[int(e)])
-#	meilleurChemin.append("Paris")
+# Tant que l'algo n'a pas trouvé la "solution" :
+while (not(algo.foundSolution())):
+	# On récupère le meilleur individu de la génération actuelle
+	meilleurVoyageur = algo.getMeilleurActuel()
+	meilleurDist = meilleurVoyageur.distanceParcourue
+	meilleurChemin = []
+	meilleurChemin.append("Paris")
+	for e in meilleurVoyageur.chemin:
+		meilleurChemin.append(nom_villes[int(e)])
+	meilleurChemin.append("Paris")
 
-#	# On fait marcher l'algo
-#	algo.selectionIndividus()
-#	algo.croisementGenes()
-#	algo.mutationGenes()
+	# On fait marcher l'algo
+	algo.selectionIndividus()
+	algo.croisementGenes()
+	algo.mutationGenes()
 
-#	#print("Generation : ", generation)
-#	#print("Proba :")
-#	#for i in range(len(villes)):
-#	#	print(algo.probaChemin[i])
-#	#print("")
+	#print("Generation : ", generation)
+	#print("Proba :")
+	#for i in range(len(villes)):
+	#	print(algo.probaChemin[i])
+	#print("")
 
-#	# On recalcule les distances parcourues totales par la nouvelle génération
-#	for i in range(100):
-#		population[i].calcDistanceTotale(algo.probaChemin)
+	# On recalcule les distances parcourues totales par la nouvelle génération
+	for i in range(100):
+		population[i].calcDistanceTotale(algo.probaChemin)
 
-#	#On dit qu'on passe à la génération suivante
-#	generation += 1
+	#On dit qu'on passe à la génération suivante
+	generation += 1
 
-#print("Resultat obtenu au bout de ", generation-1, " generations :")
-#print(meilleurChemin)
-#print("Distance totale parcourue : ", meilleurDist)
+print("Resultat obtenu au bout de ", generation-1, " generations :")
+print(meilleurChemin)
+print("Distance totale parcourue : ", meilleurDist)
