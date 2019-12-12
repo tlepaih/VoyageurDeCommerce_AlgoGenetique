@@ -1,8 +1,9 @@
 ## PROBLEME DU VOYAGEUR DE COMMERCE
 ## Résolution par algorithme génétique
-## Version 1.0
+## Version 3.0
 
 # Imports
+import turtle as t
 from math import *
 from random import *
 from copy import *
@@ -25,6 +26,39 @@ def getElem(file, i, j):
             if reader.line_num - 1 == i:
                 return line[j]
 
+def dessineCroix(point, taille, gras=False):
+	if(gras):
+		t.pensize(3)
+		t.pencolor("blue")
+	else:
+		t.pensize(2)
+		t.pencolor("black")
+	t.penup()
+	t.goto(point.x + taille, point.y + taille)
+	t.pendown()
+	t.goto(point.x - taille, point.y - taille)
+	t.penup()
+	t.goto(point.x - taille, point.y + taille)
+	t.pendown()
+	t.goto(point.x + taille, point.y - taille)
+	t.penup()
+
+def dessinerChemin(chemin):
+	t.pensize(3)
+	t.pencolor("red")
+	t.goto(villes[0].x, villes[0].y)
+	t.pendown()
+	t.speed(2)
+	for c in chemin:
+		t.goto(villes[c].x, villes[c].y)
+		print(villes[c].str())
+	t.goto(villes[0].x, villes[0].y)
+	t.penup()
+	
+t.bgpic("france.png")
+t.speed(0)
+t.hideturtle()
+
 # Classes
 # Rend la manipulation de vecteurs plus facile.
 class Vect():
@@ -45,7 +79,7 @@ class Vect():
 # Stockage des noms des villes dans la list "nom_villes"
 # Stockage des coordonnées sous la forme de vecteurs dans la list "villes"
 
-file = "villes.csv"
+file = "villes.txt"
 nom_villes = []
 villes = []
 
@@ -64,13 +98,24 @@ elif file == "villes.csv":
 		contenu = csv.reader(f_villes)
 		for row in contenu:
 			nom_villes.append(row[0])
-			villes.append(Vect(row[2], row[1]))
-	print(nom_villes)
-	for v in villes:
-		print (v.x, v.y)
+			villes.append(Vect(float(row[2]), float(row[1])))
 
 else:
 	print("Erreur : Fichier de villes non existant.")
+
+origine = Vect(-4.4546, 42)
+hImage = wImage = 500
+hReel = 9.2
+wReel = 12.8
+scaleFactorX = wImage/wReel
+scaleFactorY = hImage/hReel
+
+for i in range(len(villes)):
+	villes[i] = villes[i] - origine
+	villes[i].x *= scaleFactorX
+	villes[i].y *= scaleFactorY
+	villes[i] = villes[i] - Vect(250,250)
+	dessineCroix(villes[i], 10, (i==0))
 
 # Représente un voyageur
 class Voyager():
@@ -187,46 +232,53 @@ class GeneticAlgorithm():
 
 ######   MAIN   ######
 
-#population = []
-#generation = 1
+population = []
+generation = 1
 
-#for i in range(100):
-#	population.append(Voyager(villes[0]))
-#	population[i].calcDistanceTotale()
+for i in range(100):
+	population.append(Voyager(villes[0]))
+	population[i].calcDistanceTotale()
 
-## Meilleurs valeurs de taux pour l'instant : (0.22, 0.21)	
-#algo = GeneticAlgorithm(0.22, 0.21)
-#algo.bindPopulation(population)
+# Meilleurs valeurs de taux pour l'instant : (0.22, 0.21)	
+algo = GeneticAlgorithm(0.22, 0.21)
+algo.bindPopulation(population)
 
-## Tant que l'algo n'a pas trouvé la "solution" :
-#while (not(algo.foundSolution())):
-#	# On récupère le meilleur individu de la génération actuelle
-#	meilleurVoyageur = algo.getMeilleurActuel()
-#	meilleurDist = meilleurVoyageur.distanceParcourue
-#	meilleurChemin = []
-#	meilleurChemin.append("Paris")
-#	for e in meilleurVoyageur.chemin:
-#		meilleurChemin.append(nom_villes[int(e)])
-#	meilleurChemin.append("Paris")
+# Tant que l'algo n'a pas trouvé la "solution" :
+while (not(algo.foundSolution())):
+	# On récupère le meilleur individu de la génération actuelle
+	meilleurVoyageur = algo.getMeilleurActuel()
+	meilleurDist = meilleurVoyageur.distanceParcourue
+	meilleurChemin = meilleurVoyageur.chemin
+	meilleurCheminStr = []
+	meilleurCheminStr.append("Paris")
+	for e in meilleurVoyageur.chemin:
+		meilleurCheminStr.append(nom_villes[int(e)])
+	meilleurCheminStr.append("Paris")
 
-#	# On fait marcher l'algo
-#	algo.selectionIndividus()
-#	algo.croisementGenes()
-#	algo.mutationGenes()
+	# On fait marcher l'algo
+	algo.selectionIndividus()
+	algo.croisementGenes()
+	algo.mutationGenes()
 
-#	#print("Generation : ", generation)
-#	#print("Proba :")
-#	#for i in range(len(villes)):
-#	#	print(algo.probaChemin[i])
-#	#print("")
+	#print("Generation : ", generation)
+	#print("Proba :")
+	#for i in range(len(villes)):
+	#	print(algo.probaChemin[i])
+	#print("")
 
-#	# On recalcule les distances parcourues totales par la nouvelle génération
-#	for i in range(100):
-#		population[i].calcDistanceTotale(algo.probaChemin)
+	# On recalcule les distances parcourues totales par la nouvelle génération
+	for i in range(100):
+		population[i].calcDistanceTotale(algo.probaChemin)
 
-#	#On dit qu'on passe à la génération suivante
-#	generation += 1
+	#On dit qu'on passe à la génération suivante
+	generation += 1
 
-#print("Resultat obtenu au bout de ", generation-1, " generations :")
-#print(meilleurChemin)
-#print("Distance totale parcourue : ", meilleurDist)
+print("Resultat obtenu au bout de ", generation-1, " generations :")
+print(meilleurCheminStr)
+print("Distance totale parcourue : ", meilleurDist)
+
+dessinerChemin(meilleurChemin)
+
+print(meilleurChemin)
+
+t.done()
