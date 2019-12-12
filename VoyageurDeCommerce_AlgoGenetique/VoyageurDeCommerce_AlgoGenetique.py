@@ -6,6 +6,7 @@
 from math import *
 from random import *
 from copy import *
+import csv
 
 # Functions
 def create_and_fill_double_list(size_x, size_y):
@@ -16,6 +17,13 @@ def create_and_fill_double_list(size_x, size_y):
 			l[a].append(0.0)
 
 	return l
+
+def getElem(file, i, j):
+    with open(file, 'r') as f:
+        reader = csv.reader(f)
+        for line in reader:
+            if reader.line_num - 1 == i:
+                return line[j]
 
 # Classes
 # Rend la manipulation de vecteurs plus facile.
@@ -36,15 +44,33 @@ class Vect():
 # Lecture du fichier contenant les coordonnées GPS
 # Stockage des noms des villes dans la list "nom_villes"
 # Stockage des coordonnées sous la forme de vecteurs dans la list "villes"
-with open("villes.txt", "r") as f_villes:
-	contenu = f_villes.read()
 
-w_contenu = contenu.split()
+file = "villes.csv"
 nom_villes = []
 villes = []
-for i in range(round(len(w_contenu) / 3)):
-	nom_villes.append(w_contenu[3*i])
-	villes.append(Vect(float(w_contenu[3*i + 1]), float(w_contenu[3*i + 2])))
+
+if file == "villes.txt":
+	with open(file, "r") as f_villes:
+		contenu = f_villes.read()
+
+	w_contenu = contenu.split()
+	
+	for i in range(round(len(w_contenu) / 3)):
+		nom_villes.append(w_contenu[3*i])
+		villes.append(Vect(float(w_contenu[3*i + 1]), float(w_contenu[3*i + 2])))
+
+elif file == "villes.csv":
+	with open(file, "r") as f_villes:
+		contenu = csv.reader(f_villes)
+		for row in contenu:
+			nom_villes.append(row[0])
+			villes.append(Vect(row[2], row[1]))
+	print(nom_villes)
+	for v in villes:
+		print (v.x, v.y)
+
+else:
+	print("Erreur : Fichier de villes non existant.")
 
 # Représente un voyageur
 class Voyager():
@@ -161,46 +187,46 @@ class GeneticAlgorithm():
 
 ######   MAIN   ######
 
-population = []
-generation = 1
+#population = []
+#generation = 1
 
-for i in range(100):
-	population.append(Voyager(villes[0]))
-	population[i].calcDistanceTotale()
+#for i in range(100):
+#	population.append(Voyager(villes[0]))
+#	population[i].calcDistanceTotale()
 
-# Meilleurs valeurs de taux pour l'instant : (0.22, 0.21)	
-algo = GeneticAlgorithm(0.22, 0.21)
-algo.bindPopulation(population)
+## Meilleurs valeurs de taux pour l'instant : (0.22, 0.21)	
+#algo = GeneticAlgorithm(0.22, 0.21)
+#algo.bindPopulation(population)
 
-# Tant que l'algo n'a pas trouvé la "solution" :
-while (not(algo.foundSolution())):
-	# On récupère le meilleur individu de la génération actuelle
-	meilleurVoyageur = algo.getMeilleurActuel()
-	meilleurDist = meilleurVoyageur.distanceParcourue
-	meilleurChemin = []
-	meilleurChemin.append("Paris")
-	for e in meilleurVoyageur.chemin:
-		meilleurChemin.append(nom_villes[int(e)])
-	meilleurChemin.append("Paris")
+## Tant que l'algo n'a pas trouvé la "solution" :
+#while (not(algo.foundSolution())):
+#	# On récupère le meilleur individu de la génération actuelle
+#	meilleurVoyageur = algo.getMeilleurActuel()
+#	meilleurDist = meilleurVoyageur.distanceParcourue
+#	meilleurChemin = []
+#	meilleurChemin.append("Paris")
+#	for e in meilleurVoyageur.chemin:
+#		meilleurChemin.append(nom_villes[int(e)])
+#	meilleurChemin.append("Paris")
 
-	# On fait marcher l'algo
-	algo.selectionIndividus()
-	algo.croisementGenes()
-	algo.mutationGenes()
+#	# On fait marcher l'algo
+#	algo.selectionIndividus()
+#	algo.croisementGenes()
+#	algo.mutationGenes()
 
-	#print("Generation : ", generation)
-	#print("Proba :")
-	#for i in range(len(villes)):
-	#	print(algo.probaChemin[i])
-	#print("")
+#	#print("Generation : ", generation)
+#	#print("Proba :")
+#	#for i in range(len(villes)):
+#	#	print(algo.probaChemin[i])
+#	#print("")
 
-	# On recalcule les distances parcourues totales par la nouvelle génération
-	for i in range(100):
-		population[i].calcDistanceTotale(algo.probaChemin)
+#	# On recalcule les distances parcourues totales par la nouvelle génération
+#	for i in range(100):
+#		population[i].calcDistanceTotale(algo.probaChemin)
 
-	#On dit qu'on passe à la génération suivante
-	generation += 1
+#	#On dit qu'on passe à la génération suivante
+#	generation += 1
 
-print("Resultat obtenu au bout de ", generation-1, " generations :")
-print(meilleurChemin)
-print("Distance totale parcourue : ", meilleurDist)
+#print("Resultat obtenu au bout de ", generation-1, " generations :")
+#print(meilleurChemin)
+#print("Distance totale parcourue : ", meilleurDist)
