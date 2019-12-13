@@ -17,14 +17,13 @@ villes = []
 class Affichage():
 	def __init__(self):
 		t.bgpic("france.png")
-		t.speed(0)
 		t.hideturtle()
 
 		#Deuxième Tortue pour l'affichage des stats
 		self.turtleStats = t.Turtle()
 		self.turtleStats.hideturtle()
 
-		#pour l'affichage dans la France (dans self.scaleVilles)
+		#pour l'affichage dans la France (dans self.dessineVilles)
 		self.origine = Vect(-4.4546, 42)
 		self.hImage = self.wImage = 500
 		self.hReel = 9.2
@@ -33,10 +32,12 @@ class Affichage():
 		self.scaleFactorY = self.hImage/self.hReel
 
 	def dessineCroix(self, point, taille, gras=False):
-		if(gras):
+		#On rend la tortue très rapide juste pour le dessin des croix
+		t.speed(0)
+		if(gras): #Pour la croix qui reprénsente la ville de départ et d'arrivée
 			t.pensize(3)
 			t.pencolor("blue")
-		else:
+		else: #Pour les autres
 			t.pensize(2)
 			t.pencolor("black")
 		t.penup()
@@ -48,8 +49,12 @@ class Affichage():
 		t.pendown()
 		t.goto(point.x + taille, point.y - taille)
 		t.penup()
+		#Et on ralentit au maximum la tortue pour la suite du programme
+		t.speed(1)
 
 	def dessinerChemin(self, chemin):
+		#Vitesse régulée gràace au tracer
+		t.tracer(1,0)
 		t.pensize(3)
 		t.pencolor("red")
 		t.goto(villes[0].x, villes[0].y)
@@ -67,15 +72,14 @@ class Affichage():
 			villes[i] = villes[i] - Vect(250,250)
 			self.dessineCroix(villes[i], 10, (i==0))
 
-	def gestionEffacements(self, redessiner):
-		t.speed(1)
-		if(algo.generation != 0):
-			t.tracer(100, 0)
-			if (redessiner == True):
-				for _ in range(len(villes) + 2):
-					t.undo()
-			for _ in range(3):
-				self.turtleStats.undo()
+	def gestionEffacements(self, effacer):
+		#Tracer desactive les animations de dessin (déplacement instantané)
+		t.tracer(100, 0)
+		if (effacer == True):
+			for _ in range(len(villes) + 2):
+				t.undo()
+		for _ in range(3):
+			self.turtleStats.undo()
 
 	def displayStats(self):
 		self.turtleStats.penup()
@@ -144,14 +148,16 @@ class Voyager():
 	def __repr__(self): #pour le sorted de l'algorithm
 		return repr(self.distanceParcourue)
 		
+	#On déplace le Voyager à un une ville et on incrémente sa distanceTotale
 	def deplacerA(self, posVille):
 		vectDeplacement = posVille - self.position
 		self.distanceParcourue += vectDeplacement.module()
 		self.position = posVille
 		
+	#On fait faire tout un chemin au Voyager
 	def calcDistanceTotale(self, probaChemin=[]):
 		self.reset()
-		if(self.chemin == []):
+		if(self.chemin == []): #Ici deplacement totalement aléatoire
 			randList = list(range(1,len(villes)))
 			shuffle(randList)
 			for i in randList :
@@ -161,6 +167,7 @@ class Voyager():
 			self.deplacement(probaChemin)
 			self.deplacerA(self.posInit)
 		
+	#On déplace le Voyager selon la pondération imposée par probaChemin
 	def deplacement(self, probaChemin):
 		self.chemin.clear()
 		probaChemin2 = deepcopy(probaChemin)
@@ -199,6 +206,13 @@ class GeneticAlgorithm():
 		self.population = []
 		self.generation = 0
 		self.nbIndividus = 100
+
+		# On enregistre le meilleur le chemin de toute la simultaion
+		# au cas où notre algorithme passe une fois par un bon chemin
+		# mais il s'en détourne à cause d'un mauvais random
+		self.meilleurDistALL = float("inf")
+		self.meilleurCheminALL = []
+		self.meilleurCheminStrALL = []
 		
 		#On crée et on lance la génération 0
 		for i in range(self.nbIndividus):
@@ -226,7 +240,7 @@ class GeneticAlgorithm():
 		divAverage = len(self.meilleursIndividus)
 		for voyager in self.meilleursIndividus:
 			if (classement == 1):
-				poids = 4					# Valeur à tester pour changer le poids du premier
+				poids = 3					# Valeur à tester pour changer le poids du premier
 				divAverage += poids - 1
 			elif (classement == 2):
 				poids = 2					# Valeur à tester pour changer le poids du deuxième
@@ -261,7 +275,8 @@ class GeneticAlgorithm():
 	def foundSolution(self):
 		seuil = 1E-7
 		for x in range(len(villes)):
-			if (sum(self.probaChemin[x]) < seuil and sum(self.probaChemin[x]) != 0):
+			if (sum(self.probaChemin[x]) < seuil and sum(self.probaChemin[x]) != 0 or self.generation > 200):
+				self.meilleurDist = self.meilleurDistALL
 				return True
 		return False
 
@@ -274,6 +289,11 @@ class GeneticAlgorithm():
 		for e in self.meilleurVoyageur.chemin:
 			self.meilleurCheminStr.append(nom_villes[int(e)])
 		self.meilleurCheminStr.append("Paris")
+
+		if(self.meilleurDist < self.meilleurDistALL):
+			self.meilleurDistALL = self.meilleurDist
+			self.meilleurCheminALL = self.meilleurChemin
+			self.meilleurCheminStrALL = self.meilleurCheminStr
 
 	def create_and_fill_double_list(self, size_x, size_y):
 		l = []
@@ -295,7 +315,7 @@ aff.dessineVilles()
 pastChemin = []
 
 #On crée notre algorithme et on lance la génération 0
-algo = GeneticAlgorithm(0.18, 0.22) # Meilleurs valeurs de taux pour l'instant : (0.22, 0.23)	
+algo = GeneticAlgorithm(0.18, 0.23) # Meilleurs taux découverts après de nombreux tests
 
 # Tant que l'algo n'a pas trouvé la "solution" :
 while (not(algo.foundSolution())):
@@ -303,14 +323,14 @@ while (not(algo.foundSolution())):
 	algo.setMeilleur()
 	
 	#Gestion effacements (avant les 2 fonctions de dessin)
-	aff.gestionEffacements(algo.meilleurChemin != pastChemin)
+	if(algo.generation != 0):
+		aff.gestionEffacements(algo.meilleurChemin != pastChemin)
 
 	#Affichage stats actuelles
 	aff.displayStats()
 
-	#Affichage meilleur chemin de la génération si il est différent de celui d'avant
-	t.tracer(1,0)
-	if (algo.meilleurChemin != pastChemin):
+	#Affichage meilleur chemin de la génération s'il est différent de celui d'avant
+	if(algo.meilleurChemin != pastChemin):
 		aff.dessinerChemin(algo.meilleurChemin)
 
 	# On fait marcher l'algo
@@ -328,10 +348,13 @@ while (not(algo.foundSolution())):
 	# On enregitre le meilleur chemin de la génération d'avant pour le comparer avec celui d'après
 	pastChemin = deepcopy(algo.meilleurChemin)
 
-print("Resultat obtenu au bout de ", algo.generation-1, " generations :")
-print(algo.meilleurCheminStr)
-print("Distance totale parcourue : ", algo.meilleurDist)
+aff.gestionEffacements(True)
+aff.displayStats()
 
-aff.dessinerChemin(algo.meilleurChemin)
+print("Meilleur résultat obtenu au bout de ", algo.generation, " generations :")
+print(algo.meilleurCheminStrALL)
+print("Distance totale parcourue : ", algo.meilleurDistALL)
+
+aff.dessinerChemin(algo.meilleurCheminALL)
 
 t.done()
